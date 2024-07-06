@@ -1,0 +1,56 @@
+name: Fetch GitHub Copilot Usage Metrics
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 5 * * *' # Runs at 5 AM every day
+jobs:
+  fetchData:
+    runs-on: ubuntu-latest
+    env:
+      NAME: your_name # Replace with your organization or enterprise name
+      VERSION: your_api_version # Replace with your API version
+      AREA: org # Replace with 'org' for organization or 'enterprise' for enterprise
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Set up CURL command base and Fetch data
+        run: |
+          if [ "${{ env.AREA }}" == "org" ]; then
+            BASE_URL="https://api.github.com/orgs/${NAME}"
+          elif [ "${{ env.AREA }}" == "enterprise" ]; then
+            BASE_URL="https://api.github.com/enterprises/${NAME}"
+          else
+            echo "Invalid AREA value. Must be 'org' or 'enterprise'." >&2
+            exit 1
+          fi
+          
+          BASE_CURL="curl -L \
+            -H \"Accept: application/vnd.github+json\" \
+            -H \"Authorization: Bearer ${{ secrets.GH_TOKEN }}\" \
+            -H \"X-GitHub-Api-Version: $VERSION\""
+          
+          # Fetch usage data
+          if ! eval $BASE_CURL "$BASE_URL/copilot/usage" > ./src/assets/organization_response_sample.json; then
+            echo "Failed to fetch usage data" >&2
+            exit 1
+          fi
+          
+          # Fetch seats data
+          if ! eval $BASE_CURL "$BASE_URL/copilot/billing/seats" > ./src/assets/organization_response_sample_seats.json; then
+            echo "Failed to fetch seats data" >&2
+            exit 1
+          fi
+      - name: Process and commit data
+        run: |
+          # Example processing step
+          echo "Processing fetched data..."
+          # Add your data processing commands here
+          
+          # Configure Git
+          git config --global user.email "you@example.com"
+          git config --global user.name "Your Name"
+          
+          # Commit and push changes
+          git add ./src/assets/organization_response_sample.json ./src/assets/organization_response_sample_seats.json
+          git commit -m "Updated GitHub Copilot Usage Metrics $(date -u +"%Y-%m-%dT%H:%M:%SZ")" || exit 0
+          git push
