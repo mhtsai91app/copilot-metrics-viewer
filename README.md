@@ -7,6 +7,61 @@ _NOTE: For information on support and assistance, click [here](https://github.co
 
 This application displays a set of charts with various metrics related to GitHub Copilot for your <i>GitHub Organization</i> or <i>Enterprise Account</i>. These visualizations are designed to provide clear representations of the data, making it easy to understand and analyze the impact and adoption of GitHub Copilot. This app utilizes the [GitHub Copilot Metrics API](https://docs.github.com/en/enterprise-cloud@latest/rest/copilot/copilot-usage?apiVersion=2022-11-28).
 
+## Setup GitHub Action
+
+To set up the GitHub Action for fetching and processing GitHub Copilot usage metrics, follow these steps:
+
+1. **Configure Fetch GitHub Copilot Usage Metrics Workflow:**
+   - Navigate to the `.github/workflows/fetch-copilot-usage-metrics-data.yaml` file.
+   - Replace `your_name` with your organization or enterprise name.
+   - Replace `your_api_version` with your API version.
+   - Choose `org` for organization or `enterprise` for enterprise in the `AREA` environment variable.
+   - This workflow is scheduled to run at 5 AM every day but can be adjusted as needed.
+
+2. **Generate a GitHub Personal Access Token (PAT):**
+   - Navigate to your GitHub settings.
+   - Go to Developer settings > Personal access tokens.
+   - Generate a new token with the necessary permissions (`repo`, `workflow`).
+
+3. **Configure Secrets:**
+   - In your repository, go to Settings > Secrets.
+   - Add a new secret named `GH_PAT` and paste your generated PAT as the value.
+
+4. **Configure Build and Deploy to GitHub Pages Workflow:**
+   - The `.github/workflows/build-and-deploy-github-pages.yaml` workflow is triggered manually via the GitHub UI, after the "Fetch GitHub Copilot Usage Metrics" workflow completes, or when the main branch is updated.
+   - Ensure your project is set up to build correctly and specify the `node-version` if different from `14`.
+   - This workflow builds your project and deploys it to the `gh-pages` branch of your repository.
+
+5. **GitHub Pages Configuration:**
+   - Go to your repository's settings.
+   - Navigate to the "Pages" section.
+   - Select the `gh-pages` branch as your source.
+   - Save the changes.
+
+## Workflow Diagram
+
+Below is a diagram illustrating the GitHub Action workflow for fetching, processing, and visualizing GitHub Copilot usage metrics:
+
+```mermaid
+graph TD
+    subgraph A["Fetch GitHub Copilot Usage Metrics Workflow"]
+        Checkout["Checkout code"]
+        FetchMetrics["Fetch Copilot Metrics"]
+        ProcessMetrics["Process Metrics"]
+        CommitData["Commit Processed Data"]
+        Checkout --> FetchMetrics
+        FetchMetrics --> ProcessMetrics
+        ProcessMetrics --> CommitData
+        CommitData --> B["Project Codebase"]
+    end
+    
+    B -->|Triggers| G["Build and Deploy"]
+    
+    subgraph D["Build and Deploy to GitHub Pages Workflow"]
+        G -->|Builds and Deploys| C["Copilot Metrics Site"]
+    end
+```
+
 ## Video
 
 https://github.com/github-copilot-resources/copilot-metrics-viewer/assets/3329307/bc7e2a16-cc73-43c4-887a-b50809c08533
