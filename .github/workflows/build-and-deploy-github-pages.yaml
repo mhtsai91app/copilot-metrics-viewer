@@ -6,16 +6,23 @@ on:
     workflows: ["Fetch GitHub Copilot Usage Metrics"]
     types:
       - completed
-  push: # Trigger 3: When the main branch is updated
-    branches:
-      - main
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    env: 
+      NAME: ${{ vars.NAME }} # Name for the org or enterprise
+      BRANCH_NAME: ${{vars.BRANCH_NAME}} # Where the data should update to, if note set, default to data/${{ env.NAME }}
     steps:
+      - name: Determine branch name
+        run: |
+          if [ -z "${{ env.BRANCH_NAME }}" ]; then
+            echo "BRANCH_NAME=data/${{ env.NAME }}" >> $GITHUB_ENV
+          fi
       - name: Checkout code
         uses: actions/checkout@v2
+        with:
+          ref: ${{env.BRANCH_NAME}}
 
       - name: Set up Node.js
         uses: actions/setup-node@v2
