@@ -11,32 +11,67 @@ This application displays a set of charts with various metrics related to GitHub
 
 To set up the GitHub Action for fetching and processing GitHub Copilot usage metrics, follow these steps:
 
-1. **Configure Fetch GitHub Copilot Usage Metrics Workflow:**
-   - Navigate to the `.github/workflows/fetch-copilot-usage-metrics-data.yaml` file.
-   - Replace `your_name` with your organization or enterprise name.
-   - Replace `your_api_version` with your API version.
-   - Choose `org` for organization or `enterprise` for enterprise in the `AREA` environment variable.
-   - This workflow is scheduled to run at 5 AM every day but can be adjusted as needed.
+1. fork my version：[https://github.com/alantsai-samples/copilot-metrics-viewer/fork](https://github.com/alantsai-samples/copilot-metrics-viewer/fork)
 
-2. **Generate a GitHub Personal Access Token (PAT):**
-   - Navigate to your GitHub settings.
-   - Go to Developer settings > Personal access tokens.
-   - Generate a new token with the necessary permissions (`repo`, `workflow`).
+    ​![image](docs/assets/image-20240708152710-7kko76q.png)​
+2. disable original two GitHub Action which is create container image and deploy to Azure Static Website
 
-3. **Configure Secrets:**
-   - In your repository, go to Settings > Secrets.
-   - Add a new secret named `GH_PAT` and paste your generated PAT as the value.
+    ​![enable GitHub Action](docs/assets/image-20240708152832-45vpu60.png "enable GitHub Action")​
 
-4. **Configure Build and Deploy to GitHub Pages Workflow:**
-   - The `.github/workflows/build-and-deploy-github-pages.yaml` workflow is triggered manually via the GitHub UI, after the "Fetch GitHub Copilot Usage Metrics" workflow completes, or when the main branch is updated.
-   - Ensure your project is set up to build correctly and specify the `node-version` if different from `14`.
-   - This workflow builds your project and deploys it to the `gh-pages` branch of your repository.
+    ​![Disable Azure Static Web Apps CI/CD](docs/assets/image-20240708152857-a8h82yt.png "Disable Azure Static Web Apps CI/CD")​
 
-5. **GitHub Pages Configuration:**
-   - Go to your repository's settings.
-   - Navigate to the "Pages" section.
-   - Select the `gh-pages` branch as your source.
-   - Save the changes.
+    ​![Disable Build and push Docker image](docs/assets/image-20240708152952-rk1xlh0.png "Disable Build and push Docker image")​
+3. Setup Required secrets
+
+    ​![image](docs/assets/image-20240708153141-5un6ur9.png "add new secrets")
+
+    add `GH_TOKEN`​ as Name with the Personal Access Token created from [here](https://github.com/settings/tokens/new?scopes=read:enterprise,manage_billing:copilot) as Secret (need scope : `read:enterprise`​, `manage_billing:copilot`​)
+
+    ​![image](docs/assets/image-20240708153449-0462bic.png)​
+
+    it should look like:
+
+    ​![image](docs/assets/image-20240708153544-d7h6hu7.png)​
+4. Setup Variables
+
+    You need to set `NAME`​ as to your organization or enterprise name
+
+    ​![create new repository variable](docs/assets/image-20240708153645-tnoo4rz.png "create new repository variable")​
+
+    ​![create new repository variable](docs/assets/image-20240708153701-xoxu3b0.png "create new repository variable")
+5. Execute `Fetch GitHub Copilot Usage Metrics`​ Action
+
+    ​![image](docs/assets/image-20240708153915-8f1dkf9.png "got to Actions and find Fetch GitHub Copilot Usage Metrics then Enable Workflow")​
+
+    ​![run workflow](docs/assets/image-20240708153947-34u5ss4.png "run workflow")​
+
+    this flow is triggered every morning 05:00 at UTC time zone
+6. ​`Build and Deploy to GitHub Pages`​ will automatically be triggered when `Fetch GitHub Copilot Usage Metrics`​ is done
+
+    ​![image](docs/assets/image-20240708154135-rhkp6e7.png)​
+7. Setup GitHub Pages
+
+    ​`Settings`​ -> `Pages`​ -> `gh-pages`​
+
+    ​![enable gh-pages](docs/assets/image-20240708154246-5u38m1o.png "enable gh-pages")​
+
+    ​![new pages-build-deployment action will be created and execute automatically](docs/assets/image-20240708154329-7d1ax3i.png "new pages-build-deployment action will be created and execute automatically")​
+
+    ​![modify default project url to use gh-pages](docs/assets/image-20240708154501-1zp1nxn.png "modify default project url to use gh-pages")​
+8. Try the page
+
+    Click onto the gh-pages and you will see the result
+
+    ignore the `Using mock data - see README if unintended`​ part
+
+    ​![image](docs/assets/image-20240708154617-s09ai1g.png)​
+
+### Other Reference
+
+There are other GitHub Action Variables that you can set
+
+1. ​`AREA`​ - currently support `org`​ or `enterprise`​. It is used to build up the API url path. Default to `org`​.
+2. ​`BRANCH_NAME`​ - When fetch data, it will push default to `data/{NAME}`​ branch.  If you would like to change it, just modify this to what you want
 
 ## Workflow Diagram
 
