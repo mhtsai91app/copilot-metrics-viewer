@@ -7,8 +7,8 @@ jobs:
   fetchData:
     runs-on: ubuntu-latest
     env:
-      NAME: your_name # Replace with your organization or enterprise name
-      VERSION: your_api_version # Replace with your API version
+      # need set NAME as variable
+      VERSION: 2022-11-28 # Replace with your API version
       AREA: org # Replace with 'org' for organization or 'enterprise' for enterprise
     steps:
       - name: Checkout repository
@@ -16,9 +16,9 @@ jobs:
       - name: Set up CURL command base and Fetch data
         run: |
           if [ "${{ env.AREA }}" == "org" ]; then
-            BASE_URL="https://api.github.com/orgs/${NAME}"
+            BASE_URL="https://api.github.com/orgs/${{ vars.NAME }}"
           elif [ "${{ env.AREA }}" == "enterprise" ]; then
-            BASE_URL="https://api.github.com/enterprises/${NAME}"
+            BASE_URL="https://api.github.com/enterprises/${{ vars.NAME }}"
           else
             echo "Invalid AREA value. Must be 'org' or 'enterprise'." >&2
             exit 1
@@ -47,8 +47,8 @@ jobs:
           # Add your data processing commands here
           
           # Configure Git
-          git config --global user.email "you@example.com"
-          git config --global user.name "Your Name"
+          git config --global user.email "bot@githubaction.com"
+          git config --global user.name "GitHub Action Bot"
           
           # Commit and push changes
           git add ./src/assets/organization_response_sample.json ./src/assets/organization_response_sample_seats.json
