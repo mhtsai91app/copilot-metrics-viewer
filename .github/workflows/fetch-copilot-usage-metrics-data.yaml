@@ -1,0 +1,87 @@
+name: Fetch GitHub Copilot Usage Metrics
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 5 * * *' # Runs at 5 AM every day
+jobs:
+  fetchData:
+    runs-on: ubuntu-latest
+    env:
+      NAME: ${{ vars.NAME }} # Name for the org or enterprise
+      VERSION: 2022-11-28 # Replace with your API version
+      AREA: org # Replace with 'org' for organization or 'enterprise' for enterprise
+      BRANCH_NAME: ${{vars.BRANCH_NAME}} # Where the data should update to, if note set, default to data/${{ env.NAME }}
+    steps:
+      - name: Determine branch name
+        run: |
+          if [ -z "${{ env.BRANCH_NAME }}" ]; then
+            echo "BRANCH_NAME=data/${{ env.NAME }}" >> $GITHUB_ENV
+          fi
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Set up CURL command base and Fetch data
+        run: |
+          if [ "${{ env.AREA }}" == "org" ]; then
+            BASE_URL="https://api.github.com/orgs/${{ env.NAME }}"
+          elif [ "${{ env.AREA }}" == "enterprise" ]; then
+            BASE_URL="https://api.github.com/enterprises/${{ env.NAME }}"
+          else
+            echo "Invalid AREA value. Must be 'org' or 'enterprise'." >&2
+            exit 1
+          fi
+          
+          BASE_CURL="curl -L \
+            -H \"Accept: application/vnd.github+json\" \
+            -H \"Authorization: Bearer ${{ secrets.GH_TOKEN }}\" \
+            -H \"X-GitHub-Api-Version: $VERSION\""
+          
+          # Fetch usage data
+          if ! eval $BASE_CURL "$BASE_URL/copilot/usage" > ./src/assets/organization_response_sample.json; then
+            echo "Failed to fetch usage data" >&2
+            exit 1
+          fi
+          
+          # Fetch seats data
+          if ! eval $BASE_CURL "$BASE_URL/copilot/billing/seats" > ./src/assets/organization_response_sample_seats.json; then
+            echo "Failed to fetch seats data" >&2
+            exit 1
+          fi
+      - name: Process and commit data
+        run: |
+          # Example processing step
+          echo "Processing fetched data..."
+          # Add your data processing commands here
+
+          echo "Checking for uncommitted changes..."
+          git status
+          if ! git diff-index --quiet HEAD --; then
+            echo "Uncommitted changes detected, stashing..."
+            git stash push -m "Stashing changes before switching branches"
+          fi
+
+          echo "Ensuring git fetch to update the local reference..."
+          git fetch
+
+          echo "Checking if branch exists..."
+          if git show-ref --verify --quiet refs/heads/${{ env.BRANCH_NAME }} || git show-ref --verify --quiet refs/remotes/origin/${{ env.BRANCH_NAME }}; then
+            echo "Branch exists, switching to it"
+            git checkout ${{ env.BRANCH_NAME }}
+          else
+            echo "Branch does not exist, creating and switching to it"
+            git checkout -b ${{ env.BRANCH_NAME }}
+          fi
+
+          echo "Configuring Git..."
+          git config --global user.email "bot@githubaction.com"
+          git config --global user.name "GitHub Action Bot"
+
+          echo "Adding and committing changes..."
+          git stash pop || echo "No changes to pop"
+          git add ./src/assets/organization_response_sample.json ./src/assets/organization_response_sample_seats.json
+          git commit -m "Updated GitHub Copilot Usage Metrics $(date -u +"%Y-%m-%dT%H:%M:%SZ")" || echo "No changes to commit"
+
+          echo "Attempting to push changes..."
+          if ! git push origin ${{ env.BRANCH_NAME }}; then
+            echo "Failed to push changes, checking for issues..."
+            # Handle specific push failures here, e.g., pull and merge before retrying
+          fi

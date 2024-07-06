@@ -7,6 +7,96 @@ _NOTE: For information on support and assistance, click [here](https://github.co
 
 This application displays a set of charts with various metrics related to GitHub Copilot for your <i>GitHub Organization</i> or <i>Enterprise Account</i>. These visualizations are designed to provide clear representations of the data, making it easy to understand and analyze the impact and adoption of GitHub Copilot. This app utilizes the [GitHub Copilot Metrics API](https://docs.github.com/en/enterprise-cloud@latest/rest/copilot/copilot-usage?apiVersion=2022-11-28).
 
+## Setup GitHub Action
+
+To set up the GitHub Action for fetching and processing GitHub Copilot usage metrics, follow these steps:
+
+1. fork my version：[https://github.com/alantsai-samples/copilot-metrics-viewer/fork](https://github.com/alantsai-samples/copilot-metrics-viewer/fork)
+
+    ​![image](docs/assets/image-20240708152710-7kko76q.png)​
+2. disable original two GitHub Action which is create container image and deploy to Azure Static Website
+
+    ​![enable GitHub Action](docs/assets/image-20240708152832-45vpu60.png "enable GitHub Action")​
+
+    ​![Disable Azure Static Web Apps CI/CD](docs/assets/image-20240708152857-a8h82yt.png "Disable Azure Static Web Apps CI/CD")​
+
+    ​![Disable Build and push Docker image](docs/assets/image-20240708152952-rk1xlh0.png "Disable Build and push Docker image")​
+3. Setup Required secrets
+
+    ​![image](docs/assets/image-20240708153141-5un6ur9.png "add new secrets")
+
+    add `GH_TOKEN`​ as Name with the Personal Access Token created from [here](https://github.com/settings/tokens/new?scopes=read:enterprise,manage_billing:copilot) as Secret (need scope : `read:enterprise`​, `manage_billing:copilot`​)
+
+    ​![image](docs/assets/image-20240708153449-0462bic.png)​
+
+    it should look like:
+
+    ​![image](docs/assets/image-20240708153544-d7h6hu7.png)​
+4. Setup Variables
+
+    You need to set `NAME`​ as to your organization or enterprise name
+
+    ​![create new repository variable](docs/assets/image-20240708153645-tnoo4rz.png "create new repository variable")​
+
+    ​![create new repository variable](docs/assets/image-20240708153701-xoxu3b0.png "create new repository variable")
+5. Execute `Fetch GitHub Copilot Usage Metrics`​ Action
+
+    ​![image](docs/assets/image-20240708153915-8f1dkf9.png "got to Actions and find Fetch GitHub Copilot Usage Metrics then Enable Workflow")​
+
+    ​![run workflow](docs/assets/image-20240708153947-34u5ss4.png "run workflow")​
+
+    this flow is triggered every morning 05:00 at UTC time zone
+6. ​`Build and Deploy to GitHub Pages`​ will automatically be triggered when `Fetch GitHub Copilot Usage Metrics`​ is done
+
+    ​![image](docs/assets/image-20240708154135-rhkp6e7.png)​
+7. Setup GitHub Pages
+
+    ​`Settings`​ -> `Pages`​ -> `gh-pages`​
+
+    ​![enable gh-pages](docs/assets/image-20240708154246-5u38m1o.png "enable gh-pages")​
+
+    ​![new pages-build-deployment action will be created and execute automatically](docs/assets/image-20240708154329-7d1ax3i.png "new pages-build-deployment action will be created and execute automatically")​
+
+    ​![modify default project url to use gh-pages](docs/assets/image-20240708154501-1zp1nxn.png "modify default project url to use gh-pages")​
+8. Try the page
+
+    Click onto the gh-pages and you will see the result
+
+    ignore the `Using mock data - see README if unintended`​ part
+
+    ​![image](docs/assets/image-20240708154617-s09ai1g.png)​
+
+### Other Reference
+
+There are other GitHub Action Variables that you can set
+
+1. ​`AREA`​ - currently support `org`​ or `enterprise`​. It is used to build up the API url path. Default to `org`​.
+2. ​`BRANCH_NAME`​ - When fetch data, it will push default to `data/{NAME}`​ branch.  If you would like to change it, just modify this to what you want
+
+## Workflow Diagram
+
+Below is a diagram illustrating the GitHub Action workflow for fetching, processing, and visualizing GitHub Copilot usage metrics:
+
+```mermaid
+graph TD
+    subgraph A["Fetch GitHub Copilot Usage Metrics Workflow"]
+        Checkout["Checkout code"]
+        FetchMetrics["Fetch Copilot Metrics"]
+        ProcessMetrics["Process Metrics"]
+        CommitData["Commit Processed Data"]
+        Checkout --> FetchMetrics
+        FetchMetrics --> ProcessMetrics
+        ProcessMetrics --> CommitData
+        CommitData --> B["Project Codebase"]
+    end
+    
+    B -->|Triggers| G["Build and Deploy"]
+    
+    subgraph D["Build and Deploy to GitHub Pages Workflow"]
+        G -->|Builds and Deploys| C["Copilot Metrics Site"]
+    end
+```
+
 ## Video
 
 https://github.com/github-copilot-resources/copilot-metrics-viewer/assets/3329307/bc7e2a16-cc73-43c4-887a-b50809c08533

@@ -1,0 +1,50 @@
+name: Build and Deploy to GitHub Pages
+
+on:
+  workflow_dispatch: # Trigger 1: Manually via the GitHub UI
+  workflow_run: # Trigger 2: After "Fetch GitHub Copilot Usage Metrics" workflow completes
+    workflows: ["Fetch GitHub Copilot Usage Metrics"]
+    types:
+      - completed
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    env: 
+      NAME: ${{ vars.NAME }} # Name for the org or enterprise
+      BRANCH_NAME: ${{vars.BRANCH_NAME}} # Where the data should update to, if note set, default to data/${{ env.NAME }}
+    steps:
+      - name: Determine branch name
+        run: |
+          if [ -z "${{ env.BRANCH_NAME }}" ]; then
+            echo "BRANCH_NAME=data/${{ env.NAME }}" >> $GITHUB_ENV
+          fi
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          ref: ${{env.BRANCH_NAME}}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '18'  # Specify your Node.js version
+
+      - name: Cache Node.js modules
+        uses: actions/cache@v2
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build project
+        run: npm run build
+
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@4.1.4
+        with:
+          branch: gh-pages  # The branch the action should deploy to.
+          folder: dist  # The folder the action should deploy.
