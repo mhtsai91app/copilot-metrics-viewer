@@ -19,6 +19,19 @@ jobs:
           fi
       - name: Checkout repository
         uses: actions/checkout@v2
+      - name: Fetch and Switch Branch
+        run: |
+         echo "Ensuring git fetch to update the local reference..."
+          git fetch
+
+          echo "Checking if branch exists..."
+          if git show-ref --verify --quiet refs/heads/${{ env.BRANCH_NAME }} || git show-ref --verify --quiet refs/remotes/origin/${{ env.BRANCH_NAME }}; then
+            echo "Branch exists, switching to it"
+            git checkout ${{ env.BRANCH_NAME }}
+          else
+            echo "Branch does not exist, creating and switching to it"
+            git checkout -b ${{ env.BRANCH_NAME }}
+          fi
       - name: Set up CURL command base and Fetch data
         run: |
           if [ "${{ env.AREA }}" == "org" ]; then
@@ -58,19 +71,7 @@ jobs:
             echo "Uncommitted changes detected, stashing..."
             git stash push -m "Stashing changes before switching branches"
           fi
-
-          echo "Ensuring git fetch to update the local reference..."
-          git fetch
-
-          echo "Checking if branch exists..."
-          if git show-ref --verify --quiet refs/heads/${{ env.BRANCH_NAME }} || git show-ref --verify --quiet refs/remotes/origin/${{ env.BRANCH_NAME }}; then
-            echo "Branch exists, switching to it"
-            git checkout ${{ env.BRANCH_NAME }}
-          else
-            echo "Branch does not exist, creating and switching to it"
-            git checkout -b ${{ env.BRANCH_NAME }}
-          fi
-
+          
           echo "Configuring Git..."
           git config --global user.email "bot@githubaction.com"
           git config --global user.name "GitHub Action Bot"
