@@ -1,36 +1,5 @@
 [
   {
-    "day": "2024-06-20",
-    "total_suggestions_count": 159,
-    "total_acceptances_count": 57,
-    "total_lines_suggested": 201,
-    "total_lines_accepted": 38,
-    "total_active_users": 2,
-    "total_chat_acceptances": 2,
-    "total_chat_turns": 8,
-    "total_active_chat_users": 1,
-    "breakdown": [
-      {
-        "language": "typescript",
-        "editor": "vscode",
-        "suggestions_count": 150,
-        "acceptances_count": 57,
-        "lines_suggested": 174,
-        "lines_accepted": 38,
-        "active_users": 2
-      },
-      {
-        "language": "sql",
-        "editor": "vscode",
-        "suggestions_count": 9,
-        "acceptances_count": 0,
-        "lines_suggested": 27,
-        "lines_accepted": 0,
-        "active_users": 1
-      }
-    ]
-  },
-  {
     "day": "2024-06-22",
     "total_suggestions_count": 30,
     "total_acceptances_count": 5,
