@@ -1,27 +1,5 @@
 [
   {
-    "day": "2024-06-25",
-    "total_suggestions_count": 32,
-    "total_acceptances_count": 13,
-    "total_lines_suggested": 57,
-    "total_lines_accepted": 20,
-    "total_active_users": 2,
-    "total_chat_acceptances": 0,
-    "total_chat_turns": 0,
-    "total_active_chat_users": 0,
-    "breakdown": [
-      {
-        "language": "c#",
-        "editor": "visual_studio",
-        "suggestions_count": 32,
-        "acceptances_count": 13,
-        "lines_suggested": 57,
-        "lines_accepted": 20,
-        "active_users": 2
-      }
-    ]
-  },
-  {
     "day": "2024-06-26",
     "total_suggestions_count": 40,
     "total_acceptances_count": 16,
