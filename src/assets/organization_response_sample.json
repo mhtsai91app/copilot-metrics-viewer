@@ -100,5 +100,27 @@
     "breakdown": [
 
     ]
+  },
+  {
+    "day": "2024-07-31",
+    "total_suggestions_count": 36,
+    "total_acceptances_count": 10,
+    "total_lines_suggested": 106,
+    "total_lines_accepted": 40,
+    "total_active_users": 2,
+    "total_chat_acceptances": 0,
+    "total_chat_turns": 6,
+    "total_active_chat_users": 1,
+    "breakdown": [
+      {
+        "language": "c#",
+        "editor": "vscode",
+        "suggestions_count": 36,
+        "acceptances_count": 10,
+        "lines_suggested": 106,
+        "lines_accepted": 40,
+        "active_users": 2
+      }
+    ]
   }
 ]
